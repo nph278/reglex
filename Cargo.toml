@@ -1,6 +1,6 @@
 [package]
 name = "reglex"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "A rust lexer generator using regex"
 homepage = "https://github.com/nph278/reglex"
