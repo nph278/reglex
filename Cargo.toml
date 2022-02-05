@@ -6,7 +6,6 @@ description = "A rust lexer generator using regex"
 homepage = "https://github.com/nph278/reglex"
 repository = "https://github.com/nph278/reglex"
 license = "MIT"
-license-file = "LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
