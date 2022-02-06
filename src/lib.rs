@@ -14,7 +14,7 @@
 //!     Right,
 //! }
 //!
-//! fn lexer(input: &String) -> Result<Vec<Token>, usize> {
+//! fn lexer(input: &str) -> Result<Vec<Token>, usize> {
 //!     let regexes: RuleList<Token> = rule_list! [
 //!         r"kw" => |_| Some(Token::Keyword),
 //!         r"\d+" => |s: RuleInput| Some(Token::Number(s[0].parse().unwrap())),
@@ -36,7 +36,7 @@
 //!             Token::Number(12),
 //!             Token::Hashtag("hello".to_string()),
 //!             Token::Number(53),
-//!             Token::Right
+//!             Token::Right,
 //!         ])
 //!     );
 //!
@@ -107,6 +107,91 @@ pub fn lex<Token>(rules: &RuleList<Token>, s: &str) -> Result<Vec<Token>, usize>
                         Some(t) => {
                             // Add token
                             output.push(t);
+                            pos = m.end();
+                            break;
+                        }
+                        None => {
+                            // No token
+                            pos = m.end();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if no_token_found {
+            return Err(pos);
+        }
+    }
+
+    Ok(output)
+}
+
+/// Same as `lex`, but returns tuples of tokens and their positions in the input string.
+///
+/// # Example
+/// ```rust
+/// use reglex::{RuleList, RuleInput, rule_list, lex_numbered};
+///
+/// #[derive(Debug, PartialEq)]
+/// enum Token {
+///     Keyword,
+///     Number(u64),
+///     Hashtag(String),
+///     Left,
+///     Right,
+/// }
+///
+/// fn lexer(input: &str) -> Result<Vec<(Token, usize)>, usize> {
+///     let regexes: RuleList<Token> = rule_list! [
+///         r"kw" => |_| Some(Token::Keyword),
+///         r"\d+" => |s: RuleInput| Some(Token::Number(s[0].parse().unwrap())),
+///         r"\{" => |_| Some(Token::Left),
+///         r"\}" => |_| Some(Token::Right),
+///         r"#([a-z]+)" => |s: RuleInput| Some(Token::Hashtag(s[1].to_string())),
+///         r"\s" => |_| None,
+///     ];
+///
+///     lex_numbered(&regexes, input)
+/// }
+///
+/// fn main() {
+///     assert_eq!(
+///         lexer("kw  { 12 #hello 53 }"),
+///         Ok(vec![
+///             (Token::Keyword, 0),
+///             (Token::Left, 4),
+///             (Token::Number(12), 6),
+///             (Token::Hashtag("hello".to_string()), 9),
+///             (Token::Number(53), 16),
+///             (Token::Right, 19),
+///         ])
+///     );
+///
+///     assert_eq!(lexer("kw ERROR! { 12 #hello 53 }"), Err(3));
+/// }
+/// ```
+pub fn lex_numbered<Token>(rules: &RuleList<Token>, s: &str) -> Result<Vec<(Token, usize)>, usize> {
+    let mut pos = 0; // The position the lexer is at
+    let mut output: Vec<(Token, usize)> = Vec::new(); // The list of tokens
+
+    while pos < s.len() {
+        // Main loop
+        let mut no_token_found = true; // Is there an error? (Mathes no rules)
+
+        for (pat, f) in rules {
+            // Loop through rules
+            if let Some(m) = pat.find_at(&s, pos) {
+                // The rule has a match
+                if m.start() == pos {
+                    // The match is at the current position
+                    no_token_found = false;
+
+                    match f(pat.captures(&s[pos..]).unwrap()) {
+                        Some(t) => {
+                            // Add token
+                            output.push((t, pos));
                             pos = m.end();
                             break;
                         }
