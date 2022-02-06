@@ -29,7 +29,7 @@
 //!
 //! fn main() {
 //!     assert_eq!(
-//!         lexer(&"kw  { 12 #hello 53 }".to_string()),
+//!         lexer("kw  { 12 #hello 53 }"),
 //!         Ok(vec![
 //!             Token::Keyword,
 //!             Token::Left,
@@ -40,7 +40,7 @@
 //!         ])
 //!     );
 //!
-//!     assert_eq!(lexer(&"kw ERROR! { 12 #hello 53 }".to_string()), Err(3));
+//!     assert_eq!(lexer("kw ERROR! { 12 #hello 53 }"), Err(3));
 //! }
 //! ```
 #![deny(clippy::all, clippy::pedantic, missing_docs)]
@@ -87,7 +87,7 @@ macro_rules! rule_list {
 /// Returns a `Result`:
 /// - `Ok`: The vector of tokens
 /// - `Err`: The position of the error
-pub fn lex<Token>(rules: &RuleList<Token>, s: &String) -> Result<Vec<Token>, usize> {
+pub fn lex<Token>(rules: &RuleList<Token>, s: &str) -> Result<Vec<Token>, usize> {
     let mut pos = 0; // The position the lexer is at
     let mut output: Vec<Token> = Vec::new(); // The list of tokens
 
